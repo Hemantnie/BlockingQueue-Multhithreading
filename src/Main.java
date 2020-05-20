@@ -7,7 +7,7 @@ public class Main {
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<50;i++){
+                for(int i=0;i<20;i++){
                     try {
                         queue.enqueue(i);
                         System.out.println("Enqueued " + i);
@@ -21,7 +21,7 @@ public class Main {
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<25;i++){
+                for(int i=0;i<10;i++){
                     try {
                         System.out.println("Thread 2 dequeued : "+ queue.dequeue());
                     } catch (InterruptedException e) {
@@ -34,7 +34,7 @@ public class Main {
         Thread t3 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<25;i++){
+                for(int i=0;i<10;i++){
                     try {
                         System.out.println("Thread 3 dequeued : "+ queue.dequeue());
                     } catch (InterruptedException e) {

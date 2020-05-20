@@ -5,43 +5,52 @@ public class BlockingQueue<T> {
     int capacity;
     int head = 0;
     int tail = 0;
-    Object key = new Object();
+    CountingSemaphore semLock = new CountingSemaphore(1, 1);
+    CountingSemaphore semProducer;
+    CountingSemaphore semConsumer;
 
     @SuppressWarnings("unchecked")
     public BlockingQueue(int capacity) {
         this.capacity = capacity;
         array = (T[])new Object[capacity];
+        this.semProducer = new CountingSemaphore(capacity,capacity);
+        this.semConsumer = new CountingSemaphore(capacity,0);
     }
 
     public void enqueue(T item) throws InterruptedException {
 
-        synchronized (key){
-            while(this.size == this.capacity) key.wait();
+        semProducer.acquire();
+        semLock.acquire();
 
-            if(tail == capacity) tail = 0;
+        if(tail == capacity) tail = 0;
 
-            array[tail] = item;
-            size++;
-            tail++;
-            key.notifyAll();
-        }
+        array[tail] = item;
+        size++;
+        tail++;
 
+        semLock.release();
+        semConsumer.release();
     }
 
     public  T dequeue() throws InterruptedException {
 
-        synchronized(key){
-            while(size == 0) key.wait();
+        T item = null;
 
-            if(head == capacity) head = 0;
+        semConsumer.acquire();
+        semLock.acquire();
 
-            T item = array[head];
-            array[head] = null;
-            head++;
-            size--;
-            key.notifyAll();
-            return item;
+        if(head == capacity){
+            head = 0;
         }
 
+        item = array[head];
+        array[head] = null;
+        head++;
+        size--;
+
+        semLock.release();
+        semProducer.release();
+
+        return item;
     }
 }
