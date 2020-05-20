@@ -4,13 +4,15 @@ public class Main {
 
         BlockingQueue<Integer> queue = new BlockingQueue<>(5);
 
-        Thread t1 = new Thread(new Runnable() {
+        Thread producer1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<50;i++){
+                int i = 1;
+                while(true){
                     try {
                         queue.enqueue(i);
-                        System.out.println("Enqueued " + i);
+                        System.out.println("Producer thread 1 enqueued : " + i);
+                        i++;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -18,12 +20,15 @@ public class Main {
             }
         });
 
-        Thread t2 = new Thread(new Runnable() {
+        Thread producer2 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<25;i++){
+                int i = 5000;
+                while(true){
                     try {
-                        System.out.println("Thread 2 dequeued : "+ queue.dequeue());
+                        queue.enqueue(i);
+                        System.out.println("Producer thread 2 enqueued : " + i);
+                        i++;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -31,12 +36,15 @@ public class Main {
             }
         });
 
-        Thread t3 = new Thread(new Runnable() {
+        Thread producer3 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0;i<25;i++){
+                int i = 10000;
+                while(true){
                     try {
-                        System.out.println("Thread 3 dequeued : "+ queue.dequeue());
+                        queue.enqueue(i);
+                        System.out.println("Producer thread 3 enqueued : " + i);
+                        i++;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -44,13 +52,60 @@ public class Main {
             }
         });
 
-        t1.start();
-        Thread.sleep(4000);
-        t2.start();
+        Thread consumer1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try {
+                        System.out.println("Consumer thread 1 dequeue : "+ queue.dequeue());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
-        t2.join();
-        t3.start();
-        t1.join();
-        t3.join();
+        Thread consumer2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try {
+                        System.out.println("Consumer thread 2 dequeue : "+ queue.dequeue());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        Thread consumer3 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try {
+                        System.out.println("Consumer thread 3 dequeue : "+ queue.dequeue());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        producer1.setDaemon(true);
+        producer2.setDaemon(true);
+        producer3.setDaemon(true);
+        consumer1.setDaemon(true);
+        consumer2.setDaemon(true);
+        consumer3.setDaemon(true);
+
+        producer1.start();
+        producer2.start();
+        producer3.start();
+
+        consumer1.start();
+        consumer2.start();
+        consumer3.start();
+
+        Thread.sleep(1000);
     }
 }

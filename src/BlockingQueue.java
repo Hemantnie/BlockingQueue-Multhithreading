@@ -1,3 +1,6 @@
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class BlockingQueue<T> {
 
     T[] array;
@@ -5,7 +8,7 @@ public class BlockingQueue<T> {
     int capacity;
     int head = 0;
     int tail = 0;
-    Object key = new Object();
+    Lock lock = new ReentrantLock();
 
     @SuppressWarnings("unchecked")
     public BlockingQueue(int capacity) {
@@ -15,33 +18,38 @@ public class BlockingQueue<T> {
 
     public void enqueue(T item) throws InterruptedException {
 
-        synchronized (key){
-            while(this.size == this.capacity) key.wait();
+        lock.lock();
 
-            if(tail == capacity) tail = 0;
+        while(this.size == this.capacity) {
+            lock.unlock();
+            lock.lock();
+        };
 
-            array[tail] = item;
-            size++;
-            tail++;
-            key.notifyAll();
-        }
+        if(tail == capacity) tail = 0;
 
+        array[tail] = item;
+        size++;
+        tail++;
+        lock.unlock();
     }
 
     public  T dequeue() throws InterruptedException {
 
-        synchronized(key){
-            while(size == 0) key.wait();
+        lock.lock();
 
-            if(head == capacity) head = 0;
+        while(size == 0) {
+            lock.unlock();
+            lock.lock();
+        };
 
-            T item = array[head];
-            array[head] = null;
-            head++;
-            size--;
-            key.notifyAll();
-            return item;
-        }
+        if(head == capacity) head = 0;
+
+        T item = array[head];
+        array[head] = null;
+        head++;
+        size--;
+        lock.unlock();
+        return item;
 
     }
 }
